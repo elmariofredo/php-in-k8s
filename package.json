@@ -1,0 +1,21 @@
+{
+  "name": "webpack-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "start": "npm install && NODE_ENV=development webpack --mode development --progress --color",
+    "watch": "npm install && NODE_ENV=development webpack --mode development --watch --progress --color",
+    "build": "npm install && NODE_ENV=production webpack --mode production --progress --color",
+    "lint": "eslint --ext .js assets",
+    "lint-fix": "eslint --ext .js assets --fix"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.2"
+  }
+}

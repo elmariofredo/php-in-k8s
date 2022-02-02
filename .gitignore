@@ -1,0 +1,27 @@
+# IDEs
+/.vscode
+/.idea
+
+# Nette
+temp
+log
+storage
+
+# Composer
+/vendor
+
+# NodeJS
+/node_modules
+/npm-debug.log
+
+# Assets
+/assets/manifest.json
+/www/assets
+
+# Apidoc
+/www/apidoc
+
+# Tests
+/tests/*.log
+/tests/tmp
+/tests/coverage.html
