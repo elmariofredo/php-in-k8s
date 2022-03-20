@@ -12,6 +12,19 @@ services:
 
   db:
     image: mariadb:10.6.5-focal
+    ## Uncomment for MySQL SSL
+    # command:
+    # - "--require_secure_transport=ON"
+    # - "--ssl-ca=/etc/certs/root-ca.pem"
+    # - "--ssl-cert=/etc/certs/server-cert.pem"
+    # - "--ssl-key=/etc/certs/server-key.pem"
+    # volumes:
+    #   # See https://techsparx.com/software-development/docker/damp/mysql-ssl-connection.html
+    #   - type: bind
+    #     source: ./certs
+    #     target: /etc/certs/
+    #   - ./.docker/db/custom_config:/etc/mysql/conf.d
+    
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 0
       MYSQL_USER: db
@@ -22,6 +35,16 @@ services:
     image: adminer:4.8.1-standalone
     ports:
       - 8081:8080
+    ## Uncomment for MySQL SSL
+    # environment:
+    #   DB_SSL_KEY: '/certs/client-key.pem'
+    #   DB_SSL_CERT: '/certs/client-cert.pem'
+    #   DB_SSL_CA: '/certs/ca.pem'
+    # volumes:
+    #   - .docker/adminer/login-ssl.php:/var/www/html/plugins-enabled/login-ssl.php
+    #   - ./certs/client-key.pem:/certs/client-key.pem
+    #   - ./certs/client-cert.pem:/certs/client-cert.pem
+    #   - ./certs/root-ca.pem:/certs/ca.pem
 
   node:
     image: node:17.3.0-alpine3.15
@@ -30,11 +53,24 @@ services:
     working_dir: /app
     command: npm run watch
 
+#  console:
+#    image: web
+#    entrypoint: bin/console
+#    volumes:
+#      - ./:/var/www/html
+#      #- ./.docker/php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+#    environment:
+#      PHP_IDE_CONFIG: serverName=localhost
+#      #XDEBUG_CONFIG: "remote_host=192.168.1.53"
+
   migration:
-    image: ${REGISTRY_HOSTNAME}/${REGISTRY_REPOSITORY_NAME}/${APP_NAME}-phpfpm:${APP_VERSION}
+    image: ${REGISTRY_HOSTNAME}/${APP_NAME}-phpfpm:${APP_VERSION}
     build:
       dockerfile: Dockerfile
       context: .
+      
+      args:
+        APP_VERSION: ${APP_VERSION}
     depends_on:
       - "db"
     volumes:
@@ -43,9 +79,10 @@ services:
     command: php ./bin/console migration:continue
     environment:
       NETTE_ENV: ${NETTE_ENV}
+      APP_VERSION: ${APP_VERSION}
 
   assets:
-    image: ${REGISTRY_HOSTNAME}/${REGISTRY_REPOSITORY_NAME}/${APP_NAME}-assets:${APP_VERSION}
+    image: ${REGISTRY_HOSTNAME}/${APP_NAME}-assets:${APP_VERSION}
     build:
       dockerfile: Dockerfile.assets
       context: .
@@ -53,10 +90,12 @@ services:
       - "./www/assets:/usr/share/caddy/assets"
 
   phpfpm:
-    image: ${REGISTRY_HOSTNAME}/${REGISTRY_REPOSITORY_NAME}/${APP_NAME}-phpfpm:${APP_VERSION}
+    image: ${REGISTRY_HOSTNAME}/${APP_NAME}-phpfpm:${APP_VERSION}
     build:
       dockerfile: Dockerfile
       context: .
+      args:
+        APP_VERSION: ${APP_VERSION}
     depends_on:
       - "db"
       - "migration"
@@ -88,6 +127,7 @@ services:
 #       MINIO_DEFAULT_BUCKETS: data
 #       MINIO_ROOT_USER: minio
 #       MINIO_ROOT_PASSWORD: minio123
+
 # volumes:
 #   minio_data:
 #     driver: local

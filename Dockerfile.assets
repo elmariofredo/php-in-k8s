@@ -1,8 +1,7 @@
 FROM composer:2.1.12 as BUILDER
 
 COPY ./config /app/config
-COPY ./composer.json /app/
-COPY ./composer.lock /app/
+COPY ./composer* /app/
 
 RUN cd /app && composer install --ignore-platform-reqs
 
